@@ -1,11 +1,13 @@
 package country
 
-import "context"
+import (
+	"context"
+
+	"github.com/codesayhi/golang-clean/internal/domain/shared"
+)
 
 type ListFilter struct {
-	Search  string
-	Page    int
-	PerPage int
+	FilterBasic shared.FilterBasic
 }
 
 type Repository interface {

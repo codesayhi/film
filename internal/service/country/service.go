@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	domain "github.com/codesayhi/golang-clean/internal/domain/country"
+	shared2 "github.com/codesayhi/golang-clean/internal/domain/shared"
+	"github.com/codesayhi/golang-clean/internal/service/shared"
 	"github.com/codesayhi/golang-clean/pkg/utils"
 	"github.com/google/uuid"
 )
@@ -55,17 +57,9 @@ func (s *service) GetBySlug(ctx context.Context, slug string) (*domain.Country, 
 }
 
 func (s *service) List(ctx context.Context, in ListCountriesInput) (*ListCountriesOutput, error) {
-	if in.Page <= 0 {
-		in.Page = 1
-	}
-	if in.PerPage <= 0 {
-		in.PerPage = 20
-	}
 
 	filter := domain.ListFilter{
-		Search:  strings.TrimSpace(in.Search),
-		Page:    in.Page,
-		PerPage: in.PerPage,
+		FilterBasic: shared2.NewFilterBasic(in.FilterBasicInput.Search, in.FilterBasicInput.Page, in.FilterBasicInput.PerPage),
 	}
 
 	items, total, err := s.repo.List(ctx, filter)
@@ -74,8 +68,8 @@ func (s *service) List(ctx context.Context, in ListCountriesInput) (*ListCountri
 	}
 
 	return &ListCountriesOutput{
-		Items: items,
-		Total: total,
+		Items:      items,
+		Pagination: sharedservice.NewPagination(total, in.FilterBasicInput.Page, in.FilterBasicInput.PerPage),
 	}, nil
 }
 

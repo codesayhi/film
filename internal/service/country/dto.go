@@ -2,6 +2,7 @@ package country
 
 import (
 	"github.com/codesayhi/golang-clean/internal/domain/country"
+	"github.com/codesayhi/golang-clean/internal/service/shared"
 	"github.com/codesayhi/golang-clean/pkg/utils"
 )
 
@@ -23,12 +24,10 @@ type UpdateCountryInput struct {
 }
 
 type ListCountriesInput struct {
-	Search  string
-	Page    int
-	PerPage int
+	FilterBasicInput sharedservice.FilterBasicInput
 }
 
 type ListCountriesOutput struct {
-	Items []*country.Country
-	Total int64
+	Items      []*country.Country
+	Pagination sharedservice.Pagination
 }

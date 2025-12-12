@@ -2,6 +2,8 @@ package httpcountry
 
 import (
 	domain "github.com/codesayhi/golang-clean/internal/domain/country"
+	"github.com/codesayhi/golang-clean/internal/http/shared/pagination"
+	usecase "github.com/codesayhi/golang-clean/internal/service/country"
 )
 
 type CountryResponse struct {
@@ -13,8 +15,8 @@ type CountryResponse struct {
 }
 
 type ListCountriesResponse struct {
-	Items []CountryResponse `json:"items"`
-	Total int64             `json:"total"`
+	Items      []CountryResponse     `json:"items"`
+	Pagination pagination.Pagination `json:"pagination"`
 }
 
 func toCountryResponse(c *domain.Country) CountryResponse {
@@ -27,13 +29,18 @@ func toCountryResponse(c *domain.Country) CountryResponse {
 	}
 }
 
-func toListCountriesResponse(items []*domain.Country, total int64) ListCountriesResponse {
-	out := ListCountriesResponse{
-		Items: make([]CountryResponse, 0, len(items)),
-		Total: total,
+func toListCountriesResponse(out *usecase.ListCountriesOutput) ListCountriesResponse {
+	// map Country → CountryResponse
+	items := make([]CountryResponse, 0, len(out.Items))
+	for _, c := range out.Items {
+		items = append(items, toCountryResponse(c))
 	}
-	for _, c := range items {
-		out.Items = append(out.Items, toCountryResponse(c))
+
+	// tạo pagination JSON từ meta
+	pg := pagination.New(out.Pagination.Total, out.Pagination.Page, out.Pagination.PerPage)
+
+	return ListCountriesResponse{
+		Items:      items,
+		Pagination: pg,
 	}
-	return out
 }

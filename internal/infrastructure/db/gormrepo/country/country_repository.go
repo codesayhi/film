@@ -93,7 +93,7 @@ func (r *Repository) List(ctx context.Context, filter domain.ListFilter) ([]*dom
 
 	db := r.db.WithContext(ctx).Model(&Model{})
 
-	if s := strings.TrimSpace(filter.Search); s != "" {
+	if s := strings.TrimSpace(filter.FilterBasic.Search); s != "" {
 		like := "%" + s + "%"
 		db = db.Where("name ILIKE ? OR code ILIKE ?", like, like)
 	}
@@ -102,17 +102,17 @@ func (r *Repository) List(ctx context.Context, filter domain.ListFilter) ([]*dom
 		return nil, 0, err
 	}
 
-	if filter.Page <= 0 {
-		filter.Page = 1
+	if filter.FilterBasic.Page <= 0 {
+		filter.FilterBasic.Page = 1
 	}
-	if filter.PerPage <= 0 {
-		filter.PerPage = 20
+	if filter.FilterBasic.PerPage <= 0 {
+		filter.FilterBasic.PerPage = 20
 	}
-	offset := (filter.Page - 1) * filter.PerPage
+	offset := (filter.FilterBasic.Page - 1) * filter.FilterBasic.PerPage
 
 	if err := db.
 		Order("position ASC, name ASC").
-		Limit(filter.PerPage).
+		Limit(filter.FilterBasic.PerPage).
 		Offset(offset).
 		Find(&models).Error; err != nil {
 		return nil, 0, err

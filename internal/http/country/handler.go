@@ -3,6 +3,7 @@ package httpcountry
 import (
 	domain "github.com/codesayhi/golang-clean/internal/domain/country"
 	usecase "github.com/codesayhi/golang-clean/internal/service/country"
+	sharedservice "github.com/codesayhi/golang-clean/internal/service/shared"
 	"github.com/codesayhi/golang-clean/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -50,9 +51,7 @@ func (h *Handler) ListCountries(c *gin.Context) {
 	}
 
 	input := usecase.ListCountriesInput{
-		Search:  req.Search,
-		Page:    req.Page,
-		PerPage: req.PerPage,
+		FilterBasicInput: sharedservice.NewFilterBasicInput(req.Search, req.Page, req.PerPage),
 	}
 
 	out, err := h.svc.List(c.Request.Context(), input)
@@ -61,7 +60,7 @@ func (h *Handler) ListCountries(c *gin.Context) {
 		return
 	}
 
-	resp := toListCountriesResponse(out.Items, out.Total)
+	resp := toListCountriesResponse(out)
 	utils.ResponseOK(c, resp)
 }
 
