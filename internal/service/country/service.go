@@ -7,6 +7,7 @@ import (
 	domain "github.com/codesayhi/golang-clean/internal/domain/country"
 	shared2 "github.com/codesayhi/golang-clean/internal/domain/shared"
 	"github.com/codesayhi/golang-clean/internal/service/shared"
+	"github.com/codesayhi/golang-clean/internal/service/shared/slug"
 	"github.com/codesayhi/golang-clean/pkg/utils"
 	"github.com/google/uuid"
 )
@@ -22,21 +23,32 @@ type Service interface {
 
 type service struct {
 	repo domain.Repository
+	slug slug.Generator
 }
 
-func NewService(repo domain.Repository) Service {
-	return &service{repo: repo}
+func NewService(repo domain.Repository, slug slug.Generator) Service {
+	return &service{repo: repo, slug: slug}
 }
 
 func (s *service) Create(ctx context.Context, in CreateCountryInput) (*domain.Country, error) {
+	if err := validateCreate(in); err != nil {
+		return nil, err
+	}
 	in.Name = strings.TrimSpace(in.Name)
-	in.Slug = strings.TrimSpace(in.Slug)
 	in.Code = strings.TrimSpace(in.Code)
+	base := s.slug.Make(in.Name)
+
+	slugs, err := s.repo.FindSimilarSlugs(ctx, base, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	slugUnique := slug.MakeUnique(base, slugs)
 
 	country := &domain.Country{
 		ID:       uuid.NewString(), // google/uuid tạo bên server
 		Name:     in.Name,
-		Slug:     in.Slug,
+		Slug:     slugUnique,
 		Code:     in.Code,
 		Position: in.Position,
 	}

@@ -3,6 +3,7 @@ package country
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -31,6 +32,22 @@ type Repository struct {
 
 func NewCountryRepository(db *gorm.DB) domain.Repository {
 	return &Repository{db: db}
+}
+
+func (r *Repository) FindSimilarSlugs(ctx context.Context, base string, ignoreID *string) ([]string, error) {
+	db := r.db.WithContext(ctx).
+		Unscoped().
+		Model(&Model{}).
+		Where("slug = ? OR slug LIKE ?", base, base+"-%")
+	if ignoreID != nil {
+		db = db.Where("id <> ?", *ignoreID)
+	}
+
+	var slugs []string
+	if err := db.Pluck("slug", &slugs).Error; err != nil {
+		return nil, err
+	}
+	return slugs, nil
 }
 
 func (r *Repository) Create(ctx context.Context, c *domain.Country) error {
@@ -102,17 +119,17 @@ func (r *Repository) List(ctx context.Context, filter domain.ListFilter) ([]*dom
 		return nil, 0, err
 	}
 
-	if filter.FilterBasic.Page <= 0 {
-		filter.FilterBasic.Page = 1
+	page := filter.FilterBasic.Page
+	perPage := filter.FilterBasic.PerPage
+	if page <= 0 || perPage <= 0 {
+		return nil, 0, fmt.Errorf("invalid pagination: page=%d per_page=%d", page, perPage)
 	}
-	if filter.FilterBasic.PerPage <= 0 {
-		filter.FilterBasic.PerPage = 20
-	}
-	offset := (filter.FilterBasic.Page - 1) * filter.FilterBasic.PerPage
+
+	offset := (page - 1) * perPage
 
 	if err := db.
 		Order("position ASC, name ASC").
-		Limit(filter.FilterBasic.PerPage).
+		Limit(perPage).
 		Offset(offset).
 		Find(&models).Error; err != nil {
 		return nil, 0, err

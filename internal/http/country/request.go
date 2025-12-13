@@ -5,7 +5,6 @@ import "github.com/codesayhi/golang-clean/pkg/utils"
 // CreateCountryRequest dùng cho POST /countries
 type CreateCountryRequest struct {
 	Name     string `json:"name" binding:"required,min=2,max=255"`
-	Slug     string `json:"slug" binding:"required,min=2,max=255"`
 	Code     string `json:"code" binding:"required,min=2,max=20"`
 	Position int    `json:"position" binding:"omitempty,gte=0"`
 }

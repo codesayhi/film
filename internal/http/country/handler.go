@@ -24,10 +24,8 @@ func (h *Handler) CreateCountry(c *gin.Context) {
 		utils.ResponseValidationError(c, err.Error())
 		return
 	}
-
 	input := usecase.CreateCountryInput{
 		Name:     req.Name,
-		Slug:     req.Slug,
 		Code:     req.Code,
 		Position: req.Position,
 	}
@@ -82,7 +80,6 @@ func (h *Handler) GetCountry(c *gin.Context) {
 		utils.ResponseServerError(c)
 		return
 	}
-
 	utils.ResponseOK(c, toCountryResponse(country))
 }
 

@@ -11,6 +11,7 @@ type ListFilter struct {
 }
 
 type Repository interface {
+	FindSimilarSlugs(ctx context.Context, base string, ignoreID *string) ([]string, error)
 	Create(ctx context.Context, c *Country) error
 	Update(ctx context.Context, c *Country) error
 	Delete(ctx context.Context, id string) error

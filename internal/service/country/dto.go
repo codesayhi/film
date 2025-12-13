@@ -9,7 +9,6 @@ import (
 // CreateCountryInput: dùng cho tạo mới.
 type CreateCountryInput struct {
 	Name     string
-	Slug     string
 	Code     string
 	Position int
 }
